@@ -64,16 +64,29 @@ ws2.on('message', (data) => {
 });
 */
 
+const client = createClient({
+    url: wsUrl,
+});
+
+const query = "subscription MessageListener { messageListener }"
+
+client.subscribe(
+    { query },
+    {
+      next: (data) => console.log(data),
+      error: console.error,
+      complete: () => console.log('finished'),
+    }
+  );
+
+/*
+
 async function messageListener(client) {
     return client.iterate({
         query: 'subscription MessageListener { messageListener }',
     });
 }
-
-const client = createClient({
-    url: wsUrl,
-});
-
+    
 const subscription = await messageListener(client);
 
 (async () => {
@@ -88,6 +101,7 @@ const subscription = await messageListener(client);
         console.log("Error " + e.message)
     }
 })()
+*/
 
 await new Promise(async resolve => {
     await sendMessages();
