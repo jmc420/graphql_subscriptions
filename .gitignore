@@ -1,0 +1,11 @@
+
+
+build/
+coverage/
+dist/
+node_modules/
+
+.project
+.settings
+.DS_Store
+*.bit
