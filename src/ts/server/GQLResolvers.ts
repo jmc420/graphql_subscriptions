@@ -15,15 +15,16 @@ export default function getResolvers() {
 
 				messages.push(message);
 				console.log("Publish "+message);
-				pubsub.publish("messageListener", message);
+				pubsub.publish("messageListener", { content: message });
 				return true;
 			},
 		},
 		Subscription: {
 			messageListener: {
-				subscribe: async function* (obj, args, context, info): AsyncGenerator {
+				resolve: (payload) => payload,
+				subscribe: (obj, args, context, info) => {
 					return pubsub.asyncIterator("messageListener");
-				},
+				}
 			},
 		},
 	}

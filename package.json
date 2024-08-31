@@ -3,6 +3,7 @@
 	"type": "module",
 	"version": "1.0.0",
 	"dependencies": {
+		"@apollo/server": "^4.10.4",
 		"@graphql-tools/schema": "^10.0.4",
 		"body-parser": "^1.20.2",
 		"dotenv": "^16.4.5",

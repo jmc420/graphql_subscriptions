@@ -1,5 +1,9 @@
 export const Schema = `
 
+type Message {
+    content: String!
+}
+
 type Mutation {
     sendMessage(message: String!): Boolean!
 }
@@ -9,6 +13,6 @@ type Query {
 }
 
 type Subscription {
-    messageListener: String!
+    messageListener: Message!
 }
 `;

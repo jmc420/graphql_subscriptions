@@ -29,6 +29,10 @@ async function sendMessages() {
         }
     }
 }
+
+export default async function sleep (ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 /*
 let ws1: WebSocket = new WebSocket(wsUrl);
 let ws2: WebSocket = new WebSocket(wsUrl);
@@ -68,7 +72,9 @@ const client = createClient({
     url: wsUrl,
 });
 
-const query = "subscription MessageListener { messageListener }"
+/*
+
+const query = "subscription MessageListener { messageListener { content } }"
 
 client.subscribe(
     { query },
@@ -79,11 +85,10 @@ client.subscribe(
     }
   );
 
-/*
-
+*/
 async function messageListener(client) {
     return client.iterate({
-        query: 'subscription MessageListener { messageListener }',
+        query: 'subscription MessageListener { messageListener  { content } }',
     });
 }
     
@@ -94,14 +99,15 @@ const subscription = await messageListener(client);
     try {
         for await (const event of subscription) {
             receivedMessages++;
-            console.log("Received event " + event)
+            console.log("Received event " + JSON.stringify(event))
         }
     }
     catch (e) {
         console.log("Error " + e.message)
     }
 })()
-*/
+
+await sleep(500);
 
 await new Promise(async resolve => {
     await sendMessages();
