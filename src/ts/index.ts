@@ -1,2 +1,2 @@
-import * as main from './server/main.js';
-import * as client from './client/Client.js';
+import * as nsMain from './server/NameSpaceMain.js';
+import * as main from './server/Main.js';

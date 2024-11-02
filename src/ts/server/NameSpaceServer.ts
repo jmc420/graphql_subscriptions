@@ -5,64 +5,45 @@ import http from 'http';
 import log from 'loglevel';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { createHandler } from 'graphql-http/lib/use/express';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { WebSocketServer } from 'ws';
 
-import getResolvers from './GQLResolvers.js';
-import { Schema } from './GQLSchema.js';
+import getResolvers from './NameSpaceResolvers.js';
+import { IAppContext } from './AppContext.js';
+import { Schema } from './NameSpaceSchema.js';
 
 export const API = '/api'
 const HOST = '0.0.0.0';
 
-export default async function apolloServer(port: number): Promise<http.Server> {
+export default async function createServer(port: number, appContext: IAppContext): Promise<http.Server> {
 	const debug: boolean = process.argv.join().indexOf("-debug") >= 0;
 
 	if (debug) {
 		log.setLevel(log.levels.DEBUG);
 	}
 
-	return new Promise(async (resolve, reject) => {
-		const resolvers = getResolvers();
+	return new Promise((resolve, reject) => {
+		const resolvers = getResolvers(appContext);
 		const schema: GraphQLSchema = makeExecutableSchema({ typeDefs: Schema, resolvers });
 		const app: Application = express();
-		const apollo = new ApolloServer({ typeDefs: schema, resolvers: resolvers });
-
-		await apollo.start();
+		const handler = createHandler({ schema: schema, context: async (req) => { return { request: req.raw } } });
 
 		app.use(bodyParser.json());
 		app.use(bodyParser.urlencoded({ extended: false }));
-		app.use(expressMiddleware(apollo, { context: async ({ req }) => ({ request: req }) }));
+		app.all(API, handler);
 
 		const httpServer: http.Server = app.listen(port, HOST, () => {
-			const wsServer = new WebSocketServer({
-				server: httpServer,
-				path: API,
-			});
+			const wsServer = new WebSocketServer({ server: httpServer });
 
 			useServer({
 				schema: schema,
 				context: (ctx) => ({
 					request: ctx.extra.request
-				}),
-				onConnect: ctx => {
-					console.log("onConnect " + ctx.extra.request.socket.remotePort);
-
-					return true;
-				},
-				onClose: (ctx) => {
-					console.log('onClose', ctx.extra.request.socket.remotePort)
-				},
-				onNext: (ctx, msg, args, result) => {
-					console.debug('onNext', { msg, result });
-				},
-				onSubscribe: (ctx, msg) => {
-					console.log('onSubscribe', { msg });
-				}
+				})
 			}, wsServer);
 
-			log.info("Running Apollo Server on http://" + HOST + ":" + port);
+			log.info("Running on http://" + HOST + ":" + port);
 
 			function shutdown() {
 				httpServer.close(() => {

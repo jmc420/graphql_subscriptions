@@ -9,13 +9,14 @@ import { createHandler } from 'graphql-http/lib/use/express';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { WebSocketServer } from 'ws';
 
-import getResolvers from './GQLResolvers.js';
-import { Schema } from './GQLSchema.js';
+import getResolvers from './Resolvers.js';
+import { IAppContext } from './AppContext.js';
+import { Schema } from './Schema.js';
 
 export const API = '/api'
 const HOST = '0.0.0.0';
 
-export default async function graphQLHttpServer(port: number): Promise<http.Server> {
+export default async function createServer(port: number, appContext: IAppContext): Promise<http.Server> {
 	const debug: boolean = process.argv.join().indexOf("-debug") >= 0;
 
 	if (debug) {
@@ -23,7 +24,7 @@ export default async function graphQLHttpServer(port: number): Promise<http.Serv
 	}
 
 	return new Promise((resolve, reject) => {
-		const resolvers = getResolvers();
+		const resolvers = getResolvers(appContext);
 		const schema: GraphQLSchema = makeExecutableSchema({ typeDefs: Schema, resolvers });
 		const app: Application = express();
 		const handler = createHandler({ schema: schema, context: async (req) => { return { request: req.raw } } });
@@ -33,30 +34,16 @@ export default async function graphQLHttpServer(port: number): Promise<http.Serv
 		app.all(API, handler);
 
 		const httpServer: http.Server = app.listen(port, HOST, () => {
-			const wsServer = new WebSocketServer({ server: httpServer, path: API });
+			const wsServer = new WebSocketServer({ server: httpServer });
 
 			useServer({
 				schema: schema,
 				context: (ctx) => ({
 					request: ctx.extra.request
-				}),
-				onConnect: ctx => {
-					console.log("onConnect " + ctx.extra.request.socket.remotePort);
-
-					return true;
-				},
-				onClose: (ctx) => {
-					console.log('onClose', ctx.extra.request.socket.remotePort)
-				},
-				onNext: (ctx, msg, args, result) => {
-					console.debug('onNext', { msg, result });
-				},
-				onSubscribe: (ctx, msg) => {
-					console.log('onSubscribe', { msg });
-				}
+				})
 			}, wsServer);
 
-			log.info("Running on http://" + HOST + ":" + port + API);
+			log.info("Running on http://" + HOST + ":" + port);
 
 			function shutdown() {
 				httpServer.close(() => {

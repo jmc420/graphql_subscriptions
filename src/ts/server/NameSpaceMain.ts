@@ -2,7 +2,7 @@ import 'dotenv/config';
 import log from 'loglevel';
 
 import { getAppContext } from './AppContext.js';
-import createServer from './Server.js';
+import createServer from './NameSpaceServer.js';
 
 const PORT = 8000;
 

@@ -1,9 +1,8 @@
 {
-	"name": "GraphQLSubscrriptions",
+	"name": "GithubSubscriptions",
 	"type": "module",
 	"version": "1.0.0",
 	"dependencies": {
-		"@apollo/server": "^4.10.4",
 		"@graphql-tools/schema": "^10.0.4",
 		"body-parser": "^1.20.2",
 		"dotenv": "^16.4.5",
@@ -22,7 +21,8 @@
 		"loglevel": "^1.6.7",
 		"reflect-metadata": "^0.2.0",
 		"wkx": "^0.5.0",
-		"ws": "^8.14.2"
+		"ws": "^8.14.2",
+		"sqlite3": "^5.1.7"
 	},
 	"devDependencies": {
 		"@types/express": "^4.17.17",
@@ -50,12 +50,8 @@
 	"scripts": {
 		"all": "npm run compile && npm run server",
 		"clean": "rm -fr ./node_modules ./build/*",
-		"client": "node build/client/Client.js $*",
 		"compile": "tsc $*",
-		"debug-server": "node --inspect-brk build/server/main.js $*",
-		"debug-test": "NODE_OPTIONS='--experimental-vm-modules' node --inspect-brk=7010 ./node_modules/.bin/jest --runInBand $*",
-		"server": "node build/server/main.js $*",
-		"server-nodemon": "nodemon build/server/main.js $*",
-		"test": "NODE_OPTIONS='--experimental-vm-modules' jest $*"
+		"namespace-server": "node build/server/NameSpaceMain.js $*",
+		"server": "node build/server/main.js $*"
 	}
 }

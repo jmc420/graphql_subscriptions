@@ -1,0 +1,17 @@
+
+type Mutation {
+	create(user: UserInput!) : User!
+	deleteById(id: Int!): Boolean!
+}
+
+type Query {
+	byId(id: Int!): User
+	byPage(start: Int!, total: Int!, order: [SortOrder!]!): [User!]!
+	count: Int!
+}
+
+type Subscription {
+	createdUser : User!
+	deletedUser : User!
+}
+
